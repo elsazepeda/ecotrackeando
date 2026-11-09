@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Ficha del lote - EcoTrackeando</title>
+<style>
+body{margin:0;background:#f9fafb;color:#1f2937;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.banda{background:#fde047;text-align:center;font-weight:700;font-size:14px;padding:9px}
+main{max-width:430px;margin:22px auto;background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(15,23,42,.08);padding:24px}
+h1{font-size:24px;margin:0;text-align:center}
+.sub{text-align:center;color:#6b7280;font-size:14px;margin:4px 0 18px}
+.dato{background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.dato small{display:block;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase}
+.dato div{font-weight:600}
+.ley{font-size:12px;font-style:italic;color:#6b7280;text-align:center;margin-top:14px}
+footer{font-size:12px;color:#6b7280;text-align:center;padding:0 22px 24px;max-width:640px;margin:auto}
+a{color:#1e293b}
+</style>
+</head>
+<body>
+<div class="banda">Prototipo académico con fines demostrativos. No es un sistema oficial.</div>
+<main id="r"><p class="sub">Consultando el lote…</p></main>
+<footer>EcoTrackeando toma como referencia la LGIPE y el Reglamento de Elecciones del INE. No certifica cumplimiento legal ni sustituye los informes ante el INE. <a href="https://sites.google.com/view/ecotrackeando-propaganda">Ir al sitio</a></footer>
+<script>
+var API='https://script.google.com/macros/s/AKfycbwQNZmbq1z89ghxbP-AFdC2WSLaN9kAN34OGsTA2HM4Aa0Jf9wYOHSYdnEsvQZidlfHCg/exec';
+var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var r=document.getElementById('r');
+function esc(t){var d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML}
+function larga(s){return /^\d{4}-\d{2}-\d{2}$/.test(s)?parseInt(s.slice(8),10)+' de '+MESES[parseInt(s.slice(5,7),10)-1]+' de '+s.slice(0,4):s}
+function dato(t,v,c){return '<div class="dato"><small>'+t+'</small><div style="color:'+(c||'#1f2937')+'">'+esc(v)+'</div></div>'}
+function error(t){r.innerHTML='<h1>Lote no disponible</h1><p class="sub">'+esc(t)+'</p>'}
+var id=(new URLSearchParams(location.search).get('lote')||'').trim().toUpperCase();
+if(!id){error('Falta el identificador del lote.')}else{
+fetch(API+'?action=getLote&lote='+encodeURIComponent(id),{credentials:'omit'}).then(function(x){return x.json()}).then(function(d){
+if(!d.ok){error(d.error);return}
+var f=d.ficha,e=f.vencido?'Plazo vencido':f.estado,c=f.vencido?'#b91c1c':(/discrepancia/i.test(f.estado)?'#b45309':'#15803d');
+document.title='Lote '+f.id+' - EcoTrackeando';
+r.innerHTML='<h1>Lote '+esc(f.id)+'</h1><p class="sub">Consulta pública</p>'+dato('Partido responsable',f.partido)+dato('Material declarado',f.material)+dato(f.tipo==='Campaña'?'Plazo de retiro en vía pública':'Plazo de retiro',larga(f.plazo),'#b91c1c')+dato('Estado del retiro',e,c)+'<p class="ley">'+esc(f.leyenda)+'</p>';
+}).catch(function(){error('No fue posible consultar el lote. Intente de nuevo.')})}
+</script>
+</body>
+</html>
